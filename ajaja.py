@@ -2,6 +2,7 @@ import socket
 import pyaudio
 import threading
 import tkinter as tk
+import RPi.GPIO as GPIO  # Import the RPi.GPIO library
 
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
@@ -13,6 +14,10 @@ CHANNELS = 1
 RATE = 44100
 CHUNK = 1024
 MAX_PACKET_SIZE = 4096  # Maximum size of each packet
+PTT_GPIO_PIN = 17  # Use the desired GPIO pin number
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PTT_GPIO_PIN, GPIO.OUT)
+GPIO.output(PTT_GPIO_PIN, GPIO.LOW)  # Initialize the pin to low
 
 # Initialize PyAudio
 audio = pyaudio.PyAudio()
@@ -33,6 +38,9 @@ def send_audio():
             for i in range(0, len(data), MAX_PACKET_SIZE):
                 chunk = data[i:i+MAX_PACKET_SIZE]
                 sender_socket.sendto(chunk, (RECEIVER_IP, RECEIVER_PORT))
+                GPIO.output(PTT_GPIO_PIN, GPIO.HIGH)  # Set GPIO pin to high while PTT is active
+        else:
+            GPIO.output(PTT_GPIO_PIN, GPIO.LOW)  # Set GPIO pin to low when PTT is inactive
 
 def receive_audio():
     while True:
