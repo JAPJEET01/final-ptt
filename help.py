@@ -2,6 +2,7 @@ import socket
 import pyaudio
 import threading
 import tkinter as tk
+import RPi.GPIO as GPIO
 
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
@@ -13,6 +14,10 @@ CHANNELS = 1
 RATE = 44100
 CHUNK = 1024
 MAX_PACKET_SIZE = 4096  # Maximum size of each packet
+GPIO.setmode(GPIO.BCM)
+RELAY_PIN = 17  # Replace with the actual GPIO pin number
+GPIO.setup(RELAY_PIN, GPIO.OUT)
+
 
 # Initialize PyAudio
 audio = pyaudio.PyAudio()
@@ -38,25 +43,33 @@ def receive_audio():
     while True:
         data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
         receiver_stream.write(data)
+        GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn on the relay
+    while False:
+        GPIO.output(RELAY_PIN, GPIO.LOW)   # Turn off the relay
 
+try:
 # Start sender and receiver threads
-sender_thread = threading.Thread(target=send_audio)
-receiver_thread = threading.Thread(target=receive_audio)
-sender_thread.start()
-receiver_thread.start()
+    sender_thread = threading.Thread(target=send_audio)
+    receiver_thread = threading.Thread(target=receive_audio)
+    sender_thread.start()
+    receiver_thread.start()
 
-def key_pressed(event):
-    global ptt_active
-    if event.keysym == 'Control_L':
-        ptt_active = True
-        print("Talking...")
+    def key_pressed(event):
+        global ptt_active
+        if event.keysym == 'Control_L':
+            ptt_active = True
+            print("Talking...")
 
-def key_released(event):
-    global ptt_active
-    if event.keysym == 'Control_L':
-        ptt_active = False
-        print("Not talking...")
-
+    def key_released(event):
+        global ptt_active
+        if event.keysym == 'Control_L':
+            ptt_active = False
+            print("Not talking...")
+except KeyboardInterrupt:
+    pass
+finally:
+    # Clean up GPIO settings
+    GPIO.cleanup()
 root = tk.Tk()
 root.bind('<KeyPress>', key_pressed)
 root.bind('<KeyRelease>', key_released)
