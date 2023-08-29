@@ -53,8 +53,11 @@ def send_audio():
 def receive_audio():
     while True:
         data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
+        GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn on the relay while sending audio
         receiver_stream.write(data)
-
+    else:
+        GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn off the relay when not sending audio
+    
 # Start sender and receiver threads
 sender_thread = threading.Thread(target=send_audio)
 receiver_thread = threading.Thread(target=receive_audio)
@@ -71,6 +74,7 @@ def key_released(event):
     global ptt_active
     if event.keysym == 'Control_L':
         ptt_active = False
+        GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn off the relay when not sending audio
         print("Not talking...")
 
 root = tk.Tk()
