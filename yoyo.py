@@ -15,6 +15,17 @@ RATE = 44100
 CHUNK = 1024
 MAX_PACKET_SIZE = 1024  # Maximum size of each packet
 
+# def send_audio():
+#     global ptt_active
+#     while True:
+#         data = sender_stream.read(CHUNK)
+#         if ptt_active:
+#             for i in range(0, len(data), MAX_PACKET_SIZE):
+#                 chunk = data[i:i+MAX_PACKET_SIZE]
+#                 sender_socket.sendto(chunk, (RECEIVER_IP, RECEIVER_PORT))
+#             GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn on the relay while sending audio
+#         else:
+#             GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn off the relay when not sending audio
 
 
 
