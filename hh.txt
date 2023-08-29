@@ -1,0 +1,47 @@
+
+It looks like you're trying to create a simple audio streaming application using Python, PyAudio, and sockets. To add functionality to control a relay based on whether the Raspberry Pi is receiving audio, you can integrate Raspberry Pi GPIO controls. Here's an overview of how you could modify your code to achieve this:
+
+Import the necessary GPIO library and set up the GPIO pins for the relay.
+python
+Copy code
+import RPi.GPIO as GPIO
+
+# Set up GPIO mode and relay pin
+GPIO.setmode(GPIO.BCM)
+RELAY_PIN = 17  # Replace with the actual GPIO pin number
+GPIO.setup(RELAY_PIN, GPIO.OUT)
+Modify the receive_audio function to control the relay based on audio reception.
+python
+Copy code
+def receive_audio():
+    while True:
+        data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
+        receiver_stream.write(data)
+        if len(data) > 0:  # Check if audio data was received
+            GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn on the relay
+        else:
+            GPIO.output(RELAY_PIN, GPIO.LOW)   # Turn off the relay
+Properly clean up GPIO settings when the program is terminated.
+python
+Copy code
+try:
+    # Start sender and receiver threads
+    sender_thread = threading.Thread(target=send_audio)
+    receiver_thread = threading.Thread(target=receive_audio)
+    sender_thread.start()
+    receiver_thread.start()
+
+    # ... (the rest of your code)
+    
+except KeyboardInterrupt:
+    pass
+finally:
+    # Clean up GPIO settings
+    GPIO.cleanup()
+Please note that the exact GPIO pin number (RELAY_PIN) might differ based on your Raspberry Pi model and how you wire the relay. Make sure to adjust this pin number accordingly.
+
+Remember to have the necessary GPIO libraries installed on your Raspberry Pi. You can install them using the following command:
+
+Copy code
+pip install RPi.GPIO
+Additionally, make sure to test this code with caution, as working with GPIO pins can have hardware implications. Make sure you're aware of the voltage requirements and other electrical considerations for your relay and the connected components.

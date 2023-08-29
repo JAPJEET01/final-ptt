@@ -6,11 +6,7 @@ import tkinter as tk
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
 SENDER_PORT = 12345     # Port for sender
-<<<<<<< HEAD
-RECEIVER_IP = '192.168.29.183'  # Receiver's IP address
-=======
-RECEIVER_IP = '192.168.195.195'  # Receiver's IP address
->>>>>>> 1fdc8dbdf79f923eee267d47bc353f3cd628a79d
+RECEIVER_IP = '192.168.195.183'  # Receiver's IP address
 RECEIVER_PORT = 12346   # Port for receiver
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
