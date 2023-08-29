@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO  # Import the GPIO library
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
 SENDER_PORT = 12345     # Port for sender
-RECEIVER_IP = 'ip adderss'  # Receiver's IP address
+RECEIVER_IP = '192.168.195.195'  # Receiver's IP address
 RECEIVER_PORT = 12346   # Port for receiver
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
