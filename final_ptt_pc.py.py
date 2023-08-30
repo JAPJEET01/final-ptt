@@ -2,18 +2,19 @@ import socket
 import pyaudio
 import threading
 import tkinter as tk
-# import RPi.GPIO as GPIO
 
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
 SENDER_PORT = 12345     # Port for sender
-RECEIVER_IP = '192.168.29.183'  # Receiver's IP address (Change this to your Raspberry Pi's IP)
+RECEIVER_IP = '192.168.29.183'  # Receiver's IP address
 RECEIVER_PORT = 12346   # Port for receiver
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 CHUNK = 1024
 MAX_PACKET_SIZE = 4096  # Maximum size of each packet
+server_ip = '192.168.29.183'  # Raspberry Pi's IP address
+server_port = 12356
 
 # Initialize PyAudio
 audio = pyaudio.PyAudio()
@@ -24,13 +25,9 @@ receiver_stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, output
 sender_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 receiver_socket.bind((SENDER_HOST, RECEIVER_PORT))
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 ptt_active = False
-
-# Setup GPIO for relay control
-# GPIO.setmode(GPIO.BCM)
-# gpio_pin = 17  # Change this to the actual GPIO pin number you're using
-# GPIO.setup(gpio_pin, GPIO.OUT)
 
 def send_audio():
     while True:
@@ -40,29 +37,29 @@ def send_audio():
                 chunk = data[i:i+MAX_PACKET_SIZE]
                 sender_socket.sendto(chunk, (RECEIVER_IP, RECEIVER_PORT))
 
-def receive_audio_and_control_relay():
+def receive_audio():
     while True:
         data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
         receiver_stream.write(data)
 
-        # if data:  # Check if audio data was received
-        #     GPIO.output(gpio_pin, GPIO.HIGH)  # Turn on the relay
-        # else:
-        #     GPIO.output(gpio_pin, GPIO.LOW)   # Turn off the relay
-
 # Start sender and receiver threads
 sender_thread = threading.Thread(target=send_audio)
-receiver_thread = threading.Thread(target=receive_audio_and_control_relay)
+receiver_thread = threading.Thread(target=receive_audio)
 sender_thread.start()
 receiver_thread.start()
 
 def key_pressed(event):
+    if event.keysym == 'Control_L':
+        client_socket.sendto(b'high', (server_ip, server_port))
     global ptt_active
     if event.keysym == 'Control_L':
         ptt_active = True
         print("Talking...")
 
 def key_released(event):
+    if event.keysym == 'Control_L':
+        client_socket.sendto(b'low', (server_ip, server_port))
+
     global ptt_active
     if event.keysym == 'Control_L':
         ptt_active = False

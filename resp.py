@@ -1,20 +1,16 @@
+import RPi.GPIO as GPIO
 import socket
-import tkinter as tk
 
-server_ip = '192.168.29.183'  # Raspberry Pi's IP address
-server_port = 12346
+GPIO.setmode(GPIO.BCM)
+gpio_pin = 17  # Change this to the actual GPIO pin number you're using
+GPIO.setup(gpio_pin, GPIO.OUT)
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket.bind(('0.0.0.0', 12356))  # Change the port if needed
 
-def key_pressed(event):
-    if event.keysym == 'Control_L':
-        client_socket.sendto(b'high', (server_ip, server_port))
-
-def key_released(event):
-    if event.keysym == 'Control_L':
-        client_socket.sendto(b'low', (server_ip, server_port))
-
-root = tk.Tk()
-root.bind('<KeyPress>', key_pressed)
-root.bind('<KeyRelease>', key_released)
-root.mainloop()
+while True:
+    data, _ = server_socket.recvfrom(1024)
+    if data == b'high':
+        GPIO.output(gpio_pin, GPIO.HIGH)
+    elif data == b'low':
+        GPIO.output(gpio_pin, GPIO.LOW)
