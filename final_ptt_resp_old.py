@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO
 # Sender configuration
 SENDER_HOST = '0.0.0.0'  # Host IP
 SENDER_PORT = 12345     # Port for sender
-RECEIVER_IP = '192.168.29.90'  # Receiver's IP address
+RECEIVER_IP = '192.168.29.183'  # Receiver's IP address
 RECEIVER_PORT = 12346   # Port for receiver
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -18,6 +18,16 @@ MAX_PACKET_SIZE = 4096  # Maximum size of each packet
 GPIO.setmode(GPIO.BCM)
 gpio_pin = 17  # Change this to the actual GPIO pin number you're using
 GPIO.setup(gpio_pin, GPIO.OUT)
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket.bind(('0.0.0.0', 12356))  # Change the port if needed
+
+while True:
+    data, _ = server_socket.recvfrom(1024)
+    if data == b'high':
+        GPIO.output(gpio_pin, GPIO.HIGH)
+    elif data == b'low':
+        GPIO.output(gpio_pin, GPIO.LOW)
 
 
 
@@ -63,20 +73,6 @@ def key_released(event):
     if event.keysym == 'Control_L':
         ptt_active = False
         print("Not talking...")
-        
-        
-        
-
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_socket.bind(('0.0.0.0', 12356))  # Change the port if needed
-
-while True:
-    data, _ = server_socket.recvfrom(1024)
-    if data == b'high':
-        GPIO.output(gpio_pin, GPIO.LOW)
-    elif data == b'low':
-        GPIO.output(gpio_pin, GPIO.HIGH)
-
 
 root = tk.Tk()
 root.bind('<KeyPress>', key_pressed)
