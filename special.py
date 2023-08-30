@@ -33,18 +33,23 @@ ptt_active = False
 def send_audio():
     while True:
         if ptt_active:
+            GPIO.output(relay_pin, GPIO.HIGH)
             data = sender_stream.read(CHUNK)
             for i in range(0, len(data), MAX_PACKET_SIZE):
                 chunk = data[i:i+MAX_PACKET_SIZE]
                 sender_socket.sendto(chunk, (RECEIVER_IP, RECEIVER_PORT))
 
 def receive_audio():
-    while True:
-        GPIO.output(relay_pin, GPIO.HIGH)
-        data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
-        receiver_stream.write(data)
+    try:
+        while True:
+            GPIO.output(relay_pin, GPIO.HIGH)
+            data, _ = receiver_socket.recvfrom(MAX_PACKET_SIZE)
+            receiver_stream.write(data)
     
-GPIO.output(relay_pin, GPIO.LOW)
+    # GPIO.output(relay_pin, GPIO.LOW)
+    except KeyboardInterrupt:
+    # Clean up GPIO settings on program exit
+        GPIO.cleanup()
 
 
 # Start sender and receiver threads
